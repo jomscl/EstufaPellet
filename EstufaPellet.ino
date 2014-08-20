@@ -3,8 +3,8 @@
 
 // para arduino pro mini 16mhz
 #define fIn 2 // pin fisico 2, interrupcion 0
-#define fOut 1
-#define pot A0
+#define fOut 9
+#define pot A3
 #define led 13
 
 //constantes
@@ -14,13 +14,13 @@
 #define maxRecorte 700
 
 // variables
-volatile unsigned long tPulso=0;
-volatile unsigned long tInicio;
-volatile unsigned long tCorte=0;
+ unsigned long tPulso=0;
+ unsigned long tInicio;
+ unsigned long tCorte=0;
 
 void setup() {
   // Configuración HW
-  pinMode(fIn, INPUT);
+  pinMode(fIn, INPUT_PULLUP);
   pinMode(fOut, OUTPUT);
   pinMode(pot, INPUT);
   pinMode(led, OUTPUT);
@@ -35,10 +35,10 @@ void setup() {
   
   // debug
   Serial.begin(9600);
-  DEBUGLN("Sistema encendido");
+  Serial.println("Sistema encendido");
   
   // interrupcion
-  attachInterrupt(0, atiendeFeeder, CHANGE);
+  //attachInterrupt(0, atiendeFeeder, CHANGE);
 }
 
 void loop() {
