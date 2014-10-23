@@ -38,15 +38,15 @@
 #define maxRecorte 700
 
 // variables
-volatile unsigned long tPulso=0;
-volatile unsigned long tInicio;
-volatile unsigned long tCorte=0;
+volatile unsigned long tPulso=0; // ancho del ultimo pulso
+volatile unsigned long tInicio;  // instante de inicio del pulsoin
+volatile unsigned long tCorte=0;  // instante donde se debe apagar el pulso
 
 Metro ledMetro = Metro(250);  
 
 void setup() {
   // Configuración HW
-  pinMode(fIn, INPUT_PULLUP);
+  pinMode(fIn, INPUT_PULLUP); // revisar
   pinMode(fOut, OUTPUT);
   pinMode(pot, INPUT);
   pinMode(led, OUTPUT);
@@ -62,15 +62,15 @@ void setup() {
   DEBUGLN("Sistema encendido");
   
   // interrupcion
-  attachInterrupt(0, atiendeFeeder, CHANGE);
+  attachInterrupt(0, atiendeFeeder, RISING);
   interrupts();
 }
 
 void loop() {
   // solo se valida que el timer no se haya agotado, razon para apagar el feeder
-  if (digitalRead(fOut)==HIGH){
+  if (digitalRead(fOut)==HIGH){ // si esta el feeder encendido
     if (tPulso>0 && tCorte>0){
-      if (tCorte>=millis()){
+      if (tCorte>=millis()){ // si pasó el tiempo estipulado
         // en este punto, se debe apagar el feeder
         digitalWrite(led,LOW);
         digitalWrite(fOut,LOW);
@@ -80,29 +80,28 @@ void loop() {
   }
   
   if (ledMetro.check() == 1){
+    // iterar el led de estado
     digitalWrite(leds,!digitalRead(leds));  
   }
 }
 
-void atiendeFeeder(){
-  if (digitalRead(fIn==HIGH)){
+void atiendeFeeder1(){
+  if (digitalRead(fIn==HIGH)){ // si la interrupción está en high
     // manejo de variables y salidas
-    digitalWrite(led,HIGH);
     tInicio=millis();
+    digitalWrite(led,HIGH);
     digitalWrite(fOut,HIGH);
     
     // calculo del instante del proximo corte, basado en el pulso anterior
-    tCorte=millis();
     int vpot=analogRead(pot);
-    DEBUGDEC(vpot);
+    
     // restricciones a la medición
     vpot = constrain(vpot, 0, maxRecorte);
-    DEBUGDEC(vpot);
-    
+        
     if (tPulso>0){
-        tCorte+=map(vpot, 0, 1024, tPulso, 0);
+        tCorte=tInicio + map(vpot, 0, 1024, tPulso, 0);
     }else{
-      tCorte+=20000;
+      tCorte = tInicio + 20000;
     }
     DEBUGLN(" Encendido por flanco de subida");
   }else{
@@ -117,4 +116,12 @@ void atiendeFeeder(){
     DEBUG(" Pulso=");
     DEBUGLN(tPulso);
   } // fin if lectura del pulso de entrada
+}
+
+void atiendeFeeder(){
+  if (digitalRead(fIn==HIGH)){
+    DEBUGLN("HIGH");
+  }else{
+    DEBUGLN("LOW");
+  }
 }
