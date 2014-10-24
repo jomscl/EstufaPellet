@@ -62,14 +62,14 @@ void setup() {
   DEBUGLN("Sistema encendido");
   
   // interrupcion
-  attachInterrupt(0, atiendeFeeder, RISING);
+  attachInterrupt(0, atiendeFeeder, CHANGE);
   interrupts();
 }
 
 void loop() {
   // solo se valida que el timer no se haya agotado, razon para apagar el feeder
   if (digitalRead(fOut)==HIGH){ // si esta el feeder encendido
-    if (tPulso>0 && tCorte>0){
+    if (tPulso >=0 && tCorte>0){
       if (tCorte>=millis()){ // si pasó el tiempo estipulado
         // en este punto, se debe apagar el feeder
         digitalWrite(led,LOW);
@@ -81,12 +81,23 @@ void loop() {
   
   if (ledMetro.check() == 1){
     // iterar el led de estado
-    digitalWrite(leds,!digitalRead(leds));  
+    digitalWrite(leds,!digitalRead(leds)); 
+     
+    // depuracion de variables
+    DEBUG("   Milis:");DEBUG(millis());
+    DEBUG(" Tcorte:");DEBUG(tCorte);
+    DEBUG(" Pulso:");DEBUG(tPulso);
+    DEBUGLN(" ");
+     
   }
+  // dar una pausa de rebote en la entrada
+  noInterrupts();
+  delay(10);
+  interrupts();
 }
 
 void atiendeFeeder1(){
-  if (digitalRead(fIn==HIGH)){ // si la interrupción está en high
+  if (digitalRead(fIn)==HIGH){ // si la interrupción está en high
     // manejo de variables y salidas
     tInicio=millis();
     digitalWrite(led,HIGH);
@@ -119,7 +130,7 @@ void atiendeFeeder1(){
 }
 
 void atiendeFeeder(){
-  if (digitalRead(fIn==HIGH)){
+  if (digitalRead(fIn)==HIGH){
     DEBUGLN("HIGH");
   }else{
     DEBUGLN("LOW");
